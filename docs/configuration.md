@@ -232,6 +232,14 @@ always ends after 5 minutes.
 | `server_log` | Absolute path of the file for every other record; may be the same file as access_log; empty: stdout. Takes effect after a restart. |
 | `mosquitto_log` | The broker's log file, shown read-only on the Logs page (tab Mosquitto log, its last 8 MiB), and the source of the connection status, the connection history and the rejected connections. Mosquitto writes it with "log_dest file <path>"; the service user must be able to read it – `mqgo install` arranges that (see [Mosquitto setup](mosquitto-setup.md#mosquitto-log-access)). Empty: no view. |
 
+### Updates
+
+What the Update page offers. Every offered release, final or pre-release, must be signed with one of the release keys built into this binary.
+
+| Key | Description |
+|---|---|
+| `update_prereleases` | Offer signed pre-releases (such as v1.2.3-rc.1) on the Update page besides final releases. Off (default): final releases only. |
+
 ### Health
 
 Plain HTTP without authentication, for load balancers, monitoring and "mqgo healthcheck": /livez answers ok while the server runs, /readyz also checks that the data directory is writable and the database answers.

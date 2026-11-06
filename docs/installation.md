@@ -68,6 +68,18 @@ data; `-purge` removes them too (`-yes` skips the question). `-root DIR`
 prefixes every path and skips the user, systemd and Mosquitto steps, to
 look at the generated files without root.
 
+### Updates via the web UI
+
+`install` asks whether to prepare the installation for updates via the
+web UI (see [Administration](administration.md#update)). Yes writes the
+root helper units `/etc/systemd/system/mqgo-update.path` and
+`mqgo-update.service`, creates `/var/lib/mqgo/update` for the service user
+and enables the path unit; no removes the units again. `-auto-update=yes`
+or `-auto-update=no` answers without asking. Without the flag, install
+does not ask with `-yes`, in a dry run, with `-root` or without a
+terminal, and keeps the current state. `uninstall` removes the units and
+`/usr/local/lib/mqgo` (the binary an update replaced).
+
 ## First start: setup wizard
 
 The service starts in setup mode while no admin account exists. `install`

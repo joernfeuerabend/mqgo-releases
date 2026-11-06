@@ -5,14 +5,14 @@
 The main navigation follows the broker: **Dashboard**, **Clients**,
 **Groups**, **Roles**, **Broker** (connection, dynsec admin account,
 setup, listeners and certificates, rejected connections), **Logs**, then
-**Admin access**, **Settings** and **About**.
+**Admin access**, **Settings**, **Update** and **About**.
 
 **Admin access** holds everything that concerns only the admin UI's own
 access, not the broker. Its pages have their own tabs: **Users**, **My
 account**, **Security**, **Activity** and **Settings** (the sections
 network, TLS & domain, limits, brute-force protection and admin sessions,
 at `/admin/access/settings`). The main **Settings** page keeps the broker,
-storage, logging and health sections. Every URL of earlier versions still
+storage, logging, health and updates sections. Every URL of earlier versions still
 works (`/admin/security`, `/admin/status`, `/admin/users`,
 `/admin/account`, `/admin/settings`, `/admin/logs…`).
 
@@ -541,11 +541,56 @@ starts on page 1.
 
 The About page shows the license notice and the version information the
 binary has: the version (set at build time; a release built by the GitHub
-workflow shows its tag), the commit and its time with a note if the build
+workflow shows its tag, linked to its page in
+[mqgo-releases](https://github.com/joernfeuerabend/mqgo-releases/releases)), the commit and its time with a note if the build
 had local changes (recorded by Go when it builds in a git checkout), the
 Go version and the platform. Fields the binary does not have are left out.
 
 ![About](screenshots/about.png)
+
+## Update
+
+The Update page shows the installed version and checks for a newer one.
+mqgo contacts GitHub only when an admin clicks **Check for updates**: it
+reads the releases of the public repository
+[joernfeuerabend/mqgo-releases](https://github.com/joernfeuerabend/mqgo-releases/releases)
+without authentication. A release is offered only if
+
+- its tag is a release version (`vX.Y.Z`) or a pre-release version
+  (`vX.Y.Z-alpha.N`, `-beta.N`, `-rc.N`), newer than the installed version
+  by SemVer 2.0.0 (never a downgrade; a build past a tag, such as
+  `v1.2.3-4-gabcdef`, ranks with its tag),
+- it has a `SHA256SUMS.minisig` asset, a minisign signature of
+  `SHA256SUMS` that verifies against one of the release keys built into
+  the binary (`cmd/mqgo/keys`: the main key, or the reserve key that takes
+  over if the main key is lost or compromised), and
+- the signed `SHA256SUMS` lists the tarball for this architecture, and the
+  release has it.
+
+A release is published first and signed afterwards: until it carries
+`SHA256SUMS.minisig` it is public, but not offered. Pre-releases are
+offered only while `update_prereleases` is on (**Settings → Updates**);
+the page then shows a warning. Newer releases that are not offered are
+listed with the reason.
+
+**Install update** asks for confirmation, downloads the tarball,
+`SHA256SUMS` and `SHA256SUMS.minisig` into `/var/lib/mqgo/update` and
+places a request file there. The systemd path unit `mqgo-update.path`
+then starts `mqgo-update.service`, which runs the installed, root-owned
+binary as `mqgo apply-update` (no network, `NoNewPrivileges`). The helper
+trusts nothing in the update directory, which belongs to the service
+user: it reads only regular files of bounded size and does not follow
+symlinks, checks the signature, the SHA-256 of the tarball and the
+version again, and refuses anything not newer than itself. Only then it
+keeps the current binary as `/usr/local/lib/mqgo/mqgo.previous`
+(root-owned, outside the service's writable paths), installs the new one,
+restarts the service and writes its report, which the Update page shows.
+The restart logs every admin out; the page opens the login page once the
+service answers again. `journalctl -u mqgo-update` shows the helper's log.
+
+The helper units exist only if `install` prepared the installation for
+updates via the web UI (see [Installation](installation.md#updates-via-the-web-ui));
+otherwise the page says how to enable it.
 
 ## Log files
 

@@ -72,6 +72,10 @@ More screenshots of every page are in [Administration](docs/administration.md).
   and ACL files, impact analysis, snapshot and rollback;
   `mqgo mosquitto-restore` undoes it
 - First-run setup wizard with a one-time token, several admin accounts
+- Updates from the admin UI: on request, mqgo checks the public release
+  page for a newer release, offers it only if it is signed with one of the
+  release keys built into the binary, and installs it through a root
+  helper that checks everything again
 
 **Security**
 - Admin UI over HTTPS with a self-signed certificate or one from Let's
@@ -97,6 +101,7 @@ https://github.com/joernfeuerabend/mqgo-releases/releases/latest
 | `mqgo_<version>_linux_amd64.tar.gz` | Linux, x86-64 |
 | `mqgo_<version>_linux_arm64.tar.gz` | Linux, ARM64 |
 | `SHA256SUMS` | SHA-256 checksums of the archives |
+| `SHA256SUMS.minisig` | [minisign](https://jedisct1.github.io/minisign/) signature of `SHA256SUMS` |
 
 Each archive contains the binary `mqgo`, `LICENSE`, `COMMERCIAL-LICENSE.md`
 and `THIRD_PARTY_LICENSES`. Check the download and unpack it:
@@ -104,6 +109,13 @@ and `THIRD_PARTY_LICENSES`. Check the download and unpack it:
 ```sh
 sha256sum -c --ignore-missing SHA256SUMS
 tar -xzf mqgo_<version>_linux_<arch>.tar.gz
+```
+
+`SHA256SUMS.minisig` is added once the release is signed. With it, the
+checksums can be verified against the release key as well:
+
+```sh
+minisign -V -m SHA256SUMS -P RWRZMDjvbiHx1jKJ7WzndZwuefRi+O4R20S2kBHBJxCv5Z1xWXgI9SGe
 ```
 
 ## Quick start
